@@ -12,16 +12,14 @@ import com.gerija.giphy.R
 import com.gerija.giphy.data.api.dto.Data
 
 
-class GifsAdapter(val context: Context, val gifOnClick: GifOnClick) : RecyclerView.Adapter<GifsAdapter.GifsViewHolder>() {
+class GifsAdapter(val context: Context, val gifOnClick: GifOnClick)
+    : RecyclerView.Adapter<GifsAdapter.GifsViewHolder>() {
 
     var gifsList = arrayListOf<Data>()
-    set(value) {
-        field = value
-        notifyDataSetChanged()
-    }
+
 
     interface GifOnClick{
-        fun onClick(data: Data)
+        fun onClick(data: Data, gifsList: ArrayList<Data>, position: Int)
     }
 
     inner class GifsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -30,8 +28,8 @@ class GifsAdapter(val context: Context, val gifOnClick: GifOnClick) : RecyclerVi
 
         init {
             itemView.setOnClickListener {
-                gifOnClick.onClick(gifsList[position])
-            }
+                gifOnClick.onClick(gifsList[position], gifsList, position)
+           }
         }
     }
 

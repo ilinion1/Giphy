@@ -69,10 +69,12 @@ class MainActivity : AppCompatActivity(), GifsAdapter.GifOnClick {
     /**
      * Интерфейс, открываю новую активити с нажатой гифкой
      */
-    override fun onClick(data: Data) {
+    override fun onClick(data: Data, gifsList: ArrayList<Data>, position: Int) {
         val intent = Intent(this, SingleGifActivity::class.java)
         val gifUrl = data.images.original.url
         intent.putExtra("gifUrl", gifUrl)
+        intent.putExtra("gifsList", gifsList)
+        intent.putExtra("position", position)
         startActivity(intent)
 
     }
@@ -120,17 +122,24 @@ class MainActivity : AppCompatActivity(), GifsAdapter.GifOnClick {
     /**
      * Запускаю по клику на поиск запись гифок по запросу во ViewModel
      */
-    private fun startSearchGif() {
-        binding.imSerch.setOnClickListener {
-            if (binding.edSearch.text.isNotEmpty()) {
-                binding.tvPage1.setTextColor(ContextCompat.getColor(this, R.color.teal_300))
-                binding.tvPage2.setTextColor(ContextCompat.getColor(this, R.color.black))
-                binding.tvPage3.setTextColor(ContextCompat.getColor(this, R.color.black))
+    private fun startSearchGif() = with(binding) {
+        imSerch.setOnClickListener {
+            imSerch.setImageResource(R.drawable.ic_search_pressed)
+            if (edSearch.text.isNotEmpty()) {
+                tvPage1.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.teal_300))
+                tvPage2.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.black))
+                tvPage3.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.black))
                 lifecycleScope.launch {
-                    viewModel.getSearchGifs(binding.edSearch.text.toString(), 0)
+                    viewModel.getSearchGifs(edSearch.text.toString(), 0)
+                    imSerch.setImageResource(R.drawable.ic_search_normal)
                 }
             } else {
-                Toast.makeText(this, "Enter text into search", Toast.LENGTH_LONG).show()
+                lifecycleScope.launch {
+                    delay(200)
+                    Toast.makeText(this@MainActivity, "Enter text into search", Toast.LENGTH_LONG).show()
+                    imSerch.setImageResource(R.drawable.ic_search_normal)
+                }
+
             }
         }
     }
