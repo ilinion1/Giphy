@@ -26,7 +26,7 @@ interface ApiService {
 
     companion object{
         private const val API_KEY = "U6BGrK0dzxJPCZy8fi2Bl0LuEeyVG5oW"
-        private const val LIMIT = 26
+        private const val LIMIT = 20
         private const val RATING = "g"
         private const val LANG = "en"
     }

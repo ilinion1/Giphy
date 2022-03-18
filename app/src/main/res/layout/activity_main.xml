@@ -6,84 +6,63 @@
     android:layout_height="match_parent"
     tools:context=".presentation.MainActivity">
 
-    <EditText
-        android:id="@+id/edSearch"
+
+    <SearchView
+        android:id="@+id/searchId"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="40dp"
-        android:ems="10"
-        android:gravity="center"
-        android:hint="@string/search"
-        android:inputType="textPersonName"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="5dp"
+        android:background="@drawable/search_backgraund"
+        android:iconifiedByDefault="false"
+        android:queryHint="@string/search"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/imSerch"
+
+    <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:src="@drawable/ic_search"
-        android:clickable="true"
-        app:layout_constraintBottom_toBottomOf="@+id/edSearch"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/edSearch"
-        app:layout_constraintTop_toTopOf="@+id/edSearch"
-        android:focusable="true" />
-
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewId"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/tvPage1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edSearch"
-        app:layout_constraintVertical_bias="0.484"
-        tools:listitem="@layout/gif_item" />
+        app:layout_constraintTop_toBottomOf="@+id/searchId">
 
-    <TextView
-        android:id="@+id/tvPage1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
-        android:text="1"
-        android:textColor="@color/teal_300"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.44"
-        app:layout_constraintStart_toStartOf="parent" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tvPage2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginBottom="5dp"
-        android:onClick="onClickSetColor"
-        android:text="2"
-        android:textColor="@color/black"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/tvPage1" />
+            <Button
+                android:id="@+id/backPage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Back Page"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="2dp"
+                android:visibility="gone" />
 
-    <TextView
-        android:id="@+id/tvPage3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginBottom="5dp"
-        android:text="3"
-        android:textColor="@color/black"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/tvPage2" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewId"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="8dp"
+                tools:listitem="@layout/gif_item" />
+
+            <Button
+                android:id="@+id/nextPage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Next Page"
+                android:layout_marginBottom="5dp"
+                android:visibility="gone" />
+        </LinearLayout>
+    </ScrollView>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
