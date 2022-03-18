@@ -1,11 +1,10 @@
 package com.gerija.giphy.presentation
 
 import android.os.Bundle
-import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GestureDetectorCompat
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.gerija.giphy.R
@@ -13,107 +12,91 @@ import com.gerija.giphy.data.api.dto.Data
 import com.gerija.giphy.databinding.ActivitySingleGifBinding
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.math.abs
 
-class SingleGifActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
-    lateinit var binding: ActivitySingleGifBinding
-    lateinit var gestureDetector: GestureDetector
+
+class SingleGifActivity : AppCompatActivity() {
+    private lateinit var binding: ActivitySingleGifBinding
+    private lateinit var gestureDetector: GestureDetectorCompat
+    private lateinit var gifsListContainer: ArrayList<List<Data>>
+    private val gifsList = ArrayList<Data>()
     private var position = 0
 
-    var x1: Float = 0.0f
-    var x2: Float = 0.0f
-
     companion object {
-        const val MIN_DISTANCE = 150
+        const val MIN_DISTANCE = 100
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySingleGifBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        startAndSetIntents()
+
+        gestureDetector = GestureDetectorCompat(this, GestureListener())
+        binding.imLogo.setOnClickListener {
+            finish()
+        }
+    }
+
+    /**
+     * Получаю интент и задаю их значение
+     */
+    private fun startAndSetIntents(){
         val gifUrlIntent = intent.getStringExtra("gifUrl").toString()
-        position = intent.getIntExtra("position", 0)
-
         Glide.with(this).load(gifUrlIntent).into(binding.imSingleGif)
+        position = intent.getIntExtra("position", 0)
+        gifsListContainer = intent.getSerializableExtra("gifsList") as ArrayList<List<Data>>
+        gifsListContainer.forEach {
+            gifsList.addAll(it)
+        }
+    }
 
-        gestureDetector = GestureDetector(this, this)
+    /**
+     * Класс для слайдера
+     */
+    private inner class GestureListener : GestureDetector.SimpleOnGestureListener() {
+
+        /**
+         * Действия при скроле
+         */
+        override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+
+            val diffX = e2.x - e1.x
+            if (Math.abs(diffX) > MIN_DISTANCE) {
+
+                if (e2.x > e1.x) {
+                    //уменьшаю позицию с которой будет браться gif и меняю цвет стрелки для эффекта
+                    if (position != 0) {
+                        position--
+                        binding.imLeft.setImageResource(R.drawable.ic_left_pressed)
+                    }
+                    Glide.with(applicationContext).load(gifsList[position].images.original.url)
+                        .into(binding.imSingleGif)
+                    //ставлю 2 мил/сек задержку, что бы отобразить изменение цвета на стрелке, при клике
+                    lifecycleScope.launch {
+                        delay(200)
+                        binding.imLeft.setImageResource(R.drawable.ic_left_normal)
+                    }
+                } else {
+                    //увеличиваю позицию с которой будет браться gif и меняю цвет стрелки дял эффекта
+                    if (position < gifsList.size - 1) {
+                        position++
+                        binding.imRight.setImageResource(R.drawable.ic_right_pressed)
+                    }
+                    Glide.with(applicationContext).load(gifsList[position].images.original.url)
+                        .into(binding.imSingleGif)
+                    //ставлю 2 мил/сек задержку, что бы отобразить изменение цвета на стрелке, при клике
+                    lifecycleScope.launch {
+                        delay(200)
+                        binding.imRight.setImageResource(R.drawable.ic_right_normal)
+                    }
+                }
+            }
+            return super.onFling(e1, e2, velocityX, velocityY)
+        }
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         gestureDetector.onTouchEvent(event)
-        when (event?.action) {
-            0 -> {
-                x1 = event.x
-            }
-            1 -> {
-                x2 = event.x
-                val valueX: Float = x2 - x1
-
-                if (abs(valueX) > MIN_DISTANCE) {
-                    val gifsList = intent.getSerializableExtra("gifsList") as ArrayList<Data>
-
-                    if (x2 > x1) {
-                        if (position != 0) {
-                            position--
-                            binding.imLeft.setImageResource(R.drawable.ic_left_pressed)
-                        }
-                        val leftSwipe = gifsList[position]
-                        Glide.with(this).load(leftSwipe.images.original.url)
-                            .into(binding.imSingleGif)
-                        lifecycleScope.launch {
-                            delay(200)
-                            binding.imLeft.setImageResource(R.drawable.ic_left_normal)
-                        }
-                        Log.d("gifsList", "$position")
-                    } else {
-                        if (position < gifsList.size -1) {
-                            position++
-                            binding.imRight.setImageResource(R.drawable.ic_right_pressed)
-                        }
-                        val rightSwipe = gifsList[position]
-                        Glide.with(this).load(rightSwipe.images.original.url)
-                            .into(binding.imSingleGif)
-                        lifecycleScope.launch {
-                            delay(200)
-                            binding.imRight.setImageResource(R.drawable.ic_right_normal)
-                        }
-                        Log.d("gifsList", "$position")
-                        Log.d("gifsList", "${gifsList.size}")
-                    }
-                }
-            }
-        }
-
         return super.onTouchEvent(event)
     }
-
-
-    override fun onDown(p0: MotionEvent?): Boolean {
-//        TODO("Not yet implemented")
-        return false
-    }
-
-    override fun onShowPress(p0: MotionEvent?) {
-//        TODO("Not yet implemented")
-    }
-
-    override fun onSingleTapUp(p0: MotionEvent?): Boolean {
-//        TODO("Not yet implemented")
-        return false
-    }
-
-    override fun onScroll(p0: MotionEvent?, p1: MotionEvent?, p2: Float, p3: Float): Boolean {
-//        TODO("Not yet implemented")
-        return false
-    }
-
-    override fun onLongPress(p0: MotionEvent?) {
-//        TODO("Not yet implemented")
-    }
-
-    override fun onFling(p0: MotionEvent?, p1: MotionEvent?, p2: Float, p3: Float): Boolean {
-//        TODO("Not yet implemented")
-        return false
-    }
-
 }

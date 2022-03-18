@@ -4,8 +4,8 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageView
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.gerija.giphy.R
@@ -13,13 +13,10 @@ import com.gerija.giphy.data.api.dto.Data
 
 
 class GifsAdapter(val context: Context, val gifOnClick: GifOnClick)
-    : RecyclerView.Adapter<GifsAdapter.GifsViewHolder>() {
-
-    var gifsList = arrayListOf<Data>()
-
+    : ListAdapter<Data, GifsAdapter.GifsViewHolder>(GifItemDiffCallBack()) {
 
     interface GifOnClick{
-        fun onClick(data: Data, gifsList: ArrayList<Data>, position: Int)
+        fun onClickItem(data: Data, gifsList: List<Data>, position: Int)
     }
 
     inner class GifsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -28,7 +25,7 @@ class GifsAdapter(val context: Context, val gifOnClick: GifOnClick)
 
         init {
             itemView.setOnClickListener {
-                gifOnClick.onClick(gifsList[position], gifsList, position)
+                gifOnClick.onClickItem(getItem(position), currentList , position)
            }
         }
     }
@@ -39,11 +36,8 @@ class GifsAdapter(val context: Context, val gifOnClick: GifOnClick)
     }
 
     override fun onBindViewHolder(holder: GifsViewHolder, position: Int) {
-        val itemGifs = gifsList[position]
+        val itemGifs = getItem(position)
         val gifs = itemGifs.images.original.url
         Glide.with(context).load(gifs).into(holder.imGifs)
-
     }
-
-    override fun getItemCount() = gifsList.size
 }

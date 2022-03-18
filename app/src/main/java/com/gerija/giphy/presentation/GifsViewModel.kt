@@ -8,15 +8,13 @@ import com.gerija.giphy.data.api.dto.GifsContainer
 import com.gerija.giphy.data.repository.GifsRepositoryImpl
 import kotlinx.coroutines.launch
 
-class GifsViewModel:  ViewModel() {
-    private val repository = GifsRepositoryImpl()
-
+class GifsViewModel(private val repository: GifsRepositoryImpl):  ViewModel() {
 
     private var topGifs = MutableLiveData<GifsContainer>()
-    val _topGigs: LiveData<GifsContainer> get() = topGifs
+    val _topGifs: LiveData<GifsContainer> get() = topGifs
 
     private var searchGigs = MutableLiveData<GifsContainer>()
-    val _searchGigs: LiveData<GifsContainer> get() = searchGigs
+    val _searchGifs: LiveData<GifsContainer> get() = searchGigs
 
 
     suspend fun getTopGifs(offset: Int){
