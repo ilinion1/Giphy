@@ -2,10 +2,18 @@ package com.gerija.giphy.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.gerija.giphy.data.repository.GifsRepositoryImpl
+import com.gerija.giphy.di.ApplicationScope
+import com.gerija.giphy.domain.GetSearchGifsUseCase
+import com.gerija.giphy.domain.GetTopGifsUseCase
+import javax.inject.Inject
+import javax.inject.Provider
 
-class GifsViewModelFactory(private val repository: GifsRepositoryImpl): ViewModelProvider.Factory {
+@ApplicationScope
+class GifsViewModelFactory @Inject constructor(
+    private val viewModelsProvider: @JvmSuppressWildcards Map<Class<out ViewModel>, Provider<ViewModel>>
+): ViewModelProvider.Factory {
+
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return GifsViewModel(repository) as T
+        return viewModelsProvider[modelClass]?.get() as T
     }
 }

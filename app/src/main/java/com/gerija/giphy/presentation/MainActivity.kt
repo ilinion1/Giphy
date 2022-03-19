@@ -9,18 +9,29 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.gerija.giphy.MyApplication
 import com.gerija.giphy.data.api.dto.Data
-import com.gerija.giphy.data.repository.GifsRepositoryImpl
 import com.gerija.giphy.databinding.ActivityMainBinding
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.collections.ArrayList
+import javax.inject.Inject
 
 class MainActivity : AppCompatActivity(), GifsAdapter.GifOnClick {
+
+
     lateinit var binding: ActivityMainBinding
-    lateinit var viewModel: GifsViewModel
-    private var searchText: String? = null
+    @Inject
+    lateinit var viewModelFactory: GifsViewModelFactory
+
+    private val viewModel: GifsViewModel by lazy {
+        ViewModelProvider(this, viewModelFactory)[GifsViewModel::class.java]
+    }
+    private val component by lazy {
+        (application as MyApplication).component
+    }
+
     lateinit var adapter: GifsAdapter
-    lateinit var layoutManager: GridLayoutManager
+    private var searchText: String? = null
     private var nextClick = false
     private var page = 0
     private var offset = 20
@@ -29,19 +40,18 @@ class MainActivity : AppCompatActivity(), GifsAdapter.GifOnClick {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
+        component.inject(this)
         setContentView(binding.root)
-        val factory = GifsViewModelFactory(GifsRepositoryImpl())
-        viewModel = ViewModelProvider(this, factory)[GifsViewModel::class.java]
 
         startTopGifs() //получаю данные с репозитория, подписавшись на них
         startSearch() // загружаю данные с апи, для поиска и если пустая строка для топ
-        getDataViewModel() //подписываюсь на получение данных с viewModel
-        secondStart() //прослушиваю скролл и когда долистал до конца
+        secondStart() // вторая выгрузка данных, как дошло до конца скролла
+        getDataViewModel() //подписываюсь на обновления данных с viewModel
 
     }
 
     /**
-     * Подписываюсь на получение данных с viewModel
+     * Подписываюсь на обновления данных с viewModel
      */
     private fun getDataViewModel(){
         viewModel._searchGifs.observe(this) {
@@ -53,7 +63,7 @@ class MainActivity : AppCompatActivity(), GifsAdapter.GifOnClick {
     }
 
     /**
-     * Прослушиваю скрол и когда долистал до конца
+     * Вторая выгрузка данных, как дошло до конца скролла
      */
     private fun secondStart() {
         binding.recyclerViewId.addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -104,27 +114,27 @@ class MainActivity : AppCompatActivity(), GifsAdapter.GifOnClick {
     /**
      * При скролле вверх показываю кнопку вернуться на предыдущую страницу и реализация
      */
-    private fun scrollUp(recyclerView: RecyclerView, newState: Int) = with(binding) {
+    private fun scrollUp(recyclerView: RecyclerView, newState: Int) {
         if (recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
             if (page != 0) {
-                backPage.visibility = View.VISIBLE
+                binding.backPage.visibility = View.VISIBLE
                 if (offset == 0){
-                    backPage.visibility = View.GONE
+                    binding.backPage.visibility = View.GONE
                 }
-                backPage.setOnClickListener {
+                binding.backPage.setOnClickListener {
                     settingsScrollUp()
 
                     lifecycleScope.launch {
                         if ((searchText == null)) {
                             viewModel.getTopGifs(offset)
                             page--
-                            backPage.visibility = View.GONE
+                            binding.backPage.visibility = View.GONE
 
                         } else {
                             searchText?.let {
                                 viewModel.getSearchGifs(it, offset)
                                 page--
-                                backPage.visibility = View.GONE
+                                binding.backPage.visibility = View.GONE
                             }
                         }
                     }
@@ -155,13 +165,12 @@ class MainActivity : AppCompatActivity(), GifsAdapter.GifOnClick {
     private fun startAdapter(data: List<Data>) {
         adapter = GifsAdapter(this, this)
         if (!madeScroll) {
-            adapter.submitList(data)
+            adapter.gifsList.addAll(data)
             binding.recyclerViewId.adapter = adapter
-            layoutManager = GridLayoutManager(this, 2)
-            binding.recyclerViewId.layoutManager = layoutManager
+            binding.recyclerViewId.layoutManager = GridLayoutManager(this, 2)
             madeScroll = true
         } else {
-            adapter.submitList(data)
+            adapter.gifsList.addAll(data)
             binding.recyclerViewId.adapter = adapter
         }
     }
@@ -178,15 +187,21 @@ class MainActivity : AppCompatActivity(), GifsAdapter.GifOnClick {
     /**
      * Интерфейс, открываю новую активити с нажатой гифкой
      */
-    override fun onClickItem(data: Data, gifsList: List<Data>, position: Int) {
+    override fun onClick(dataUrl: String?, gifsList: ArrayList<Data>, position: Int) {
         val intent = Intent(this, SingleGifActivity::class.java)
-        val gifUrl = data.images.original.url
-        val gifsListContainer = ArrayList<List<Data>>()
-        gifsListContainer.add(gifsList)
-        intent.putExtra("gifUrl", gifUrl)
-        intent.putExtra("gifsList", gifsListContainer)
+        intent.putExtra("gifUrl", dataUrl)
+        intent.putExtra("gifsList", gifsList)
         intent.putExtra("position", position)
         startActivity(intent)
+    }
+
+    override fun deleteItem(position: Int) {
+        adapter.gifsList.removeAt(position)
+        lifecycleScope.launch {
+            adapter.notifyItemRemoved(position)
+            delay(1000)
+            adapter.notifyDataSetChanged()
+        }
     }
 
     /**
@@ -225,6 +240,3 @@ class MainActivity : AppCompatActivity(), GifsAdapter.GifOnClick {
         }
     }
 }
-
-
-

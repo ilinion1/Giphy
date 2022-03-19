@@ -1,25 +1,40 @@
 package com.gerija.giphy.presentation
 
 import android.os.Bundle
+import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GestureDetectorCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.gerija.giphy.MyApplication
 import com.gerija.giphy.R
 import com.gerija.giphy.data.api.dto.Data
 import com.gerija.giphy.databinding.ActivitySingleGifBinding
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 
 class SingleGifActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySingleGifBinding
     private lateinit var gestureDetector: GestureDetectorCompat
-    private lateinit var gifsListContainer: ArrayList<List<Data>>
-    private val gifsList = ArrayList<Data>()
+
+
+    @Inject
+    lateinit var viewModelFactory: GifsViewModelFactory
+
+    private val viewModel: GifsViewModel by lazy {
+        ViewModelProvider(this, viewModelFactory)[GifsViewModel::class.java]
+    }
+    private val component by lazy {
+        (application as MyApplication).component
+    }
+
     private var position = 0
+    private lateinit var gifsList: ArrayList<Data>
 
     companion object {
         const val MIN_DISTANCE = 100
@@ -28,25 +43,38 @@ class SingleGifActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySingleGifBinding.inflate(layoutInflater)
+        component.inject(this)
         setContentView(binding.root)
-        startAndSetIntents()
+        startAndSetIntents() //получаю и устанавливаю значение из intent
+        deleteGifs() //слушатель на кнопку удаление gif
 
         gestureDetector = GestureDetectorCompat(this, GestureListener())
-        binding.imLogo.setOnClickListener {
-            finish()
-        }
+        binding.imLogo.setOnClickListener { finish() }
+
     }
+
 
     /**
      * Получаю интент и задаю их значение
+     * Устанавливаю слушатель на уделание картинки
      */
     private fun startAndSetIntents(){
         val gifUrlIntent = intent.getStringExtra("gifUrl").toString()
         Glide.with(this).load(gifUrlIntent).into(binding.imSingleGif)
         position = intent.getIntExtra("position", 0)
-        gifsListContainer = intent.getSerializableExtra("gifsList") as ArrayList<List<Data>>
-        gifsListContainer.forEach {
-            gifsList.addAll(it)
+        gifsList = intent.getSerializableExtra("gifsList") as ArrayList<Data>
+    }
+
+    private fun deleteGifs(){
+        binding.imageDelete.setOnClickListener {
+            gifsList.removeAt(position)
+            binding.imageDelete.setImageResource(R.drawable.ic_delete_precced)
+            lifecycleScope.launch {
+                delay(200)
+                Glide.with(this@SingleGifActivity).load(gifsList[position].images?.original?.url)
+                    .into(binding.imSingleGif)
+                binding.imageDelete.setImageResource(R.drawable.ic_delete_normal)
+            }
         }
     }
 
@@ -69,7 +97,7 @@ class SingleGifActivity : AppCompatActivity() {
                         position--
                         binding.imLeft.setImageResource(R.drawable.ic_left_pressed)
                     }
-                    Glide.with(applicationContext).load(gifsList[position].images.original.url)
+                    Glide.with(this@SingleGifActivity).load(gifsList[position].images?.original?.url)
                         .into(binding.imSingleGif)
                     //ставлю 2 мил/сек задержку, что бы отобразить изменение цвета на стрелке, при клике
                     lifecycleScope.launch {
@@ -82,7 +110,7 @@ class SingleGifActivity : AppCompatActivity() {
                         position++
                         binding.imRight.setImageResource(R.drawable.ic_right_pressed)
                     }
-                    Glide.with(applicationContext).load(gifsList[position].images.original.url)
+                    Glide.with(this@SingleGifActivity).load(gifsList[position].images?.original?.url)
                         .into(binding.imSingleGif)
                     //ставлю 2 мил/сек задержку, что бы отобразить изменение цвета на стрелке, при клике
                     lifecycleScope.launch {
@@ -94,6 +122,7 @@ class SingleGifActivity : AppCompatActivity() {
             return super.onFling(e1, e2, velocityX, velocityY)
         }
     }
+
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         gestureDetector.onTouchEvent(event)
