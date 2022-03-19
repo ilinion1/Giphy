@@ -1,5 +1,7 @@
 package com.gerija.giphy.data.api.dto
 
+import com.google.gson.annotations.SerializedName
+
 data class GifsContainer(
-    val `data`: List<Data>
+    @SerializedName("data") var data: ArrayList<Data> = arrayListOf()
 )

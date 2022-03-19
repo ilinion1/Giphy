@@ -2,9 +2,9 @@ package com.gerija.giphy.domain
 
 import com.gerija.giphy.data.api.dto.GifsContainer
 
-interface GigsRepository {
+interface GifsRepository {
 
-    suspend fun getGifsAreTrending(offset: Int): Result<GifsContainer>
+    suspend fun getTopGifs(offset: Int): Result<GifsContainer>
 
     suspend fun getSearchGifs(field: String, offset: Int): Result<GifsContainer>
 }

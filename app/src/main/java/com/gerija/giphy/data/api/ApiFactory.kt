@@ -1,5 +1,6 @@
 package com.gerija.giphy.data.api
 
+
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -15,4 +16,5 @@ object ApiFactory {
 
         return retrofit.create(ApiService::class.java)
     }
+
 }
