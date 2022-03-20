@@ -12,20 +12,25 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="5dp"
         android:background="@drawable/search_backgraund"
         android:iconifiedByDefault="false"
+        android:focusable="false"
         android:queryHint="@string/search"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
+    </SearchView>
 
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="5dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -37,14 +42,6 @@
             android:gravity="center"
             android:orientation="vertical">
 
-            <Button
-                android:id="@+id/backPage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Back Page"
-                android:layout_marginTop="5dp"
-                android:visibility="gone" />
-
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerViewId"
                 android:layout_width="match_parent"
@@ -53,13 +50,32 @@
                 android:layout_marginBottom="8dp"
                 tools:listitem="@layout/gif_item" />
 
-            <Button
-                android:id="@+id/nextPage"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Next Page"
-                android:layout_marginBottom="5dp"
-                android:visibility="gone" />
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/nextPage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
+                    android:backgroundTint="@color/teal_700"
+                    android:text="@string/next_page"
+                    android:visibility="gone"
+                    app:cornerRadius="20dp" />
+
+                <ProgressBar
+                    android:id="@+id/progressBarId"
+                    style="?android:attr/progressBarStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
+                    android:indeterminateTint="@color/teal_700"
+                    android:visibility="gone" />
+            </LinearLayout>
+
         </LinearLayout>
     </ScrollView>
 

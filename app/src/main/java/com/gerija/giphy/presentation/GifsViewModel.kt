@@ -20,9 +20,15 @@ class GifsViewModel @Inject constructor(
     private var searchGigs = MutableLiveData<GifsContainer>()
     val _searchGifs: LiveData<GifsContainer> get() = searchGigs
 
-    var mainUrl = MutableLiveData<String?>()
-    var gifList1 = MutableLiveData<ArrayList<Data>>()
-    var position1 = MutableLiveData<Int>()
+    var firstVisitSingleAct = true
+    var gifsListSingleAct = ArrayList<Data>()
+    var gifsPositionSingleAct = 0
+
+    var firstVisitMyAct = true
+    var gifsListMyAct = ArrayList<Data>()
+    var nextClickMyAct = false
+    var pageMyAct = 0
+    var offsetMyAct = 20
 
     suspend fun getTopGifs(offset: Int) {
         getTopGifsUseCase(offset).onSuccess {
