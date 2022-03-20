@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/cyan"
     tools:context=".presentation.MainActivity">
 
 
@@ -15,8 +16,8 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="5dp"
         android:background="@drawable/search_backgraund"
-        android:iconifiedByDefault="false"
         android:focusable="false"
+        android:iconifiedByDefault="false"
         android:queryHint="@string/search"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"

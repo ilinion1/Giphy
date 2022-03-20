@@ -1,6 +1,7 @@
 package com.gerija.giphy.presentation
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -35,11 +36,14 @@ class MainActivity : AppCompatActivity(), GifsAdapter.GifOnClick {
         binding = ActivityMainBinding.inflate(layoutInflater)
         component.inject(this)
         setContentView(binding.root)
-        Log.d("MyLog1", "4")
 
         adapter = GifsAdapter(this, this)
         binding.recyclerViewId.adapter = adapter
-        binding.recyclerViewId.layoutManager = GridLayoutManager(this, 2)
+        if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
+            binding.recyclerViewId.layoutManager = GridLayoutManager(this, 2)
+        } else {
+            binding.recyclerViewId.layoutManager = GridLayoutManager(this, 3)
+        }
 
         setFromApiTopInViewModel() //получаю данные с репозитория, подписавшись на них
         getFieldSearch() // загружаю данные с апи, для поиска и если пустая строка для топ
@@ -59,7 +63,6 @@ class MainActivity : AppCompatActivity(), GifsAdapter.GifOnClick {
      * Задаю данные полученные с Api топ gif во viewModel
      */
     private fun setFromApiTopInViewModel() {
-        //если первый вход, загружаю данные с 0 позиции. если нет, то они уже в адатере есть
         if (viewModel.firstVisitMyAct){
             lifecycleScope.launch {
                 viewModel.getTopGifs(0)
@@ -69,8 +72,7 @@ class MainActivity : AppCompatActivity(), GifsAdapter.GifOnClick {
             lifecycleScope.launch {
                 delay(300)
                 adapter.gifsList.clear()
-                startAdapter(viewModel.gifsListMyAct) //устанавливаю данные которые собрал на прошлом круге
-                Log.d("MyLog1", "3")
+                startAdapter(viewModel.gifsListMyAct)
             }
         }
     }
@@ -91,7 +93,6 @@ class MainActivity : AppCompatActivity(), GifsAdapter.GifOnClick {
      * Передаю данные полученные с поля ввода searchVIew во viewModel с нужной позиции
      */
     private fun getFieldSearch() = with(binding) {
-        Log.d("MyLog1", "0")
 
         searchId.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(p0: String): Boolean {
@@ -102,12 +103,10 @@ class MainActivity : AppCompatActivity(), GifsAdapter.GifOnClick {
                 lifecycleScope.launch {
 
                     if (p0.isEmpty()) {
-                        Log.d("MyLog1", "1")
                         searchText = null
                         adapter.gifsList.clear()
                         viewModel.getTopGifs(0)
                     } else {
-                        Log.d("MyLog1", "2")
                         adapter.gifsList.clear()
                         searchText = p0
                         viewModel.getSearchGifs(p0, 0)
@@ -126,7 +125,7 @@ class MainActivity : AppCompatActivity(), GifsAdapter.GifOnClick {
         binding.recyclerViewId.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    nextPage() //слушатель клика при нажатии на кнопку "nextPage"
+                    nextPage()
                 }
                 super.onScrollStateChanged(recyclerView, newState)
             }
@@ -195,6 +194,5 @@ class MainActivity : AppCompatActivity(), GifsAdapter.GifOnClick {
     override fun onDestroy() {
         super.onDestroy()
         viewModel.gifsListMyAct = adapter.gifsList
-        Log.d("MyLog1", "${viewModel.gifsListMyAct}")
     }
 }
