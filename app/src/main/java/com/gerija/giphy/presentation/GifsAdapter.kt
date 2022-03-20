@@ -1,16 +1,17 @@
 package com.gerija.giphy.presentation
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.gerija.giphy.R
 import com.gerija.giphy.data.api.dto.Data
+import com.squareup.picasso.Picasso
+import java.lang.Thread.sleep
+import kotlin.concurrent.thread
 
 
 class GifsAdapter(val context: Context, val gifOnClick: GifOnClick)
@@ -25,7 +26,7 @@ class GifsAdapter(val context: Context, val gifOnClick: GifOnClick)
      }
 
     interface GifOnClick{
-        fun onClick(dataUrl: String?, gifsList: ArrayList<Data>, position: Int)
+        fun onClick(gifsList: ArrayList<Data>, position: Int)
         fun deleteItem(position: Int)
     }
 
@@ -35,7 +36,7 @@ class GifsAdapter(val context: Context, val gifOnClick: GifOnClick)
 
         init {
             itemView.setOnClickListener {
-                gifOnClick.onClick(gifsList[position].images?.original?.url, gifsList, position)
+                gifOnClick.onClick(gifsList, position)
            }
         }
     }
@@ -48,9 +49,16 @@ class GifsAdapter(val context: Context, val gifOnClick: GifOnClick)
     override fun onBindViewHolder(holder: GifsViewHolder, position: Int) {
         val itemGifs = gifsList[position]
         val gifs = itemGifs.images?.original?.url
-        Glide.with(context).load(gifs).into(holder.imGifs)
+        Picasso.get().load(gifs).into(holder.imGifs)
+//        Glide.with(context).load(gifs).into(holder.imGifs)
+
         holder.imDelete.setOnClickListener {
-            gifOnClick.deleteItem(position)
+            holder.imDelete.setImageResource(R.drawable.ic_delete_precced)
+            thread {
+                sleep(200)
+                gifOnClick.deleteItem(position)
+                holder.imDelete.setImageResource(R.drawable.ic_delete_normal)
+            }
         }
     }
 

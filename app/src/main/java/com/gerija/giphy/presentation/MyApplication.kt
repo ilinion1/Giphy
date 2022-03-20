@@ -1,4 +1,4 @@
-package com.gerija.giphy
+package com.gerija.giphy.presentation
 
 import android.app.Application
 import com.gerija.giphy.di.DaggerApplicationsComponent

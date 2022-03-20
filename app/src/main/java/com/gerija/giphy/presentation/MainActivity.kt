@@ -2,6 +2,7 @@ package com.gerija.giphy.presentation
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
@@ -9,7 +10,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.gerija.giphy.MyApplication
 import com.gerija.giphy.data.api.dto.Data
 import com.gerija.giphy.databinding.ActivityMainBinding
 import kotlinx.coroutines.delay
@@ -18,83 +18,139 @@ import javax.inject.Inject
 
 class MainActivity : AppCompatActivity(), GifsAdapter.GifOnClick {
 
-
     lateinit var binding: ActivityMainBinding
     @Inject
     lateinit var viewModelFactory: GifsViewModelFactory
-
     private val viewModel: GifsViewModel by lazy {
         ViewModelProvider(this, viewModelFactory)[GifsViewModel::class.java]
     }
-    private val component by lazy {
-        (application as MyApplication).component
-    }
+    private val component by lazy { (application as MyApplication).component }
 
     lateinit var adapter: GifsAdapter
     private var searchText: String? = null
-    private var nextClick = false
-    private var page = 0
-    private var offset = 20
-    var madeScroll = false
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         component.inject(this)
         setContentView(binding.root)
+        Log.d("MyLog1", "4")
 
-        startTopGifs() //получаю данные с репозитория, подписавшись на них
-        startSearch() // загружаю данные с апи, для поиска и если пустая строка для топ
-        secondStart() // вторая выгрузка данных, как дошло до конца скролла
+        adapter = GifsAdapter(this, this)
+        binding.recyclerViewId.adapter = adapter
+        binding.recyclerViewId.layoutManager = GridLayoutManager(this, 2)
+
+        setFromApiTopInViewModel() //получаю данные с репозитория, подписавшись на них
+        getFieldSearch() // загружаю данные с апи, для поиска и если пустая строка для топ
+        scrollEnd() // вторая выгрузка данных, как дошло до конца скролла
         getDataViewModel() //подписываюсь на обновления данных с viewModel
+    }
 
+    /**
+     * Запуск адаптера
+     */
+    private fun startAdapter(data: ArrayList<Data>) {
+        adapter.gifsList.addAll(data)
+        adapter.notifyDataSetChanged()
+    }
+
+    /**
+     * Задаю данные полученные с Api топ gif во viewModel
+     */
+    private fun setFromApiTopInViewModel() {
+        //если первый вход, загружаю данные с 0 позиции. если нет, то они уже в адатере есть
+        if (viewModel.firstVisitMyAct){
+            lifecycleScope.launch {
+                viewModel.getTopGifs(0)
+                viewModel.firstVisitMyAct = false
+            }
+        } else {
+            lifecycleScope.launch {
+                delay(300)
+                adapter.gifsList.clear()
+                startAdapter(viewModel.gifsListMyAct) //устанавливаю данные которые собрал на прошлом круге
+                Log.d("MyLog1", "3")
+            }
+        }
     }
 
     /**
      * Подписываюсь на обновления данных с viewModel
      */
-    private fun getDataViewModel(){
-        viewModel._searchGifs.observe(this) {
+    private fun getDataViewModel() {
+            viewModel._searchGifs.observe(this) {
             startAdapter(it.data)
-        }
-        viewModel._topGifs.observe(this) {
+            }
+            viewModel._topGifs.observe(this) {
             startAdapter(it.data)
-        }
+            }
     }
 
     /**
-     * Вторая выгрузка данных, как дошло до конца скролла
+     * Передаю данные полученные с поля ввода searchVIew во viewModel с нужной позиции
      */
-    private fun secondStart() {
+    private fun getFieldSearch() = with(binding) {
+        Log.d("MyLog1", "0")
+
+        searchId.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(p0: String): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(p0: String): Boolean {
+                lifecycleScope.launch {
+
+                    if (p0.isEmpty()) {
+                        Log.d("MyLog1", "1")
+                        searchText = null
+                        adapter.gifsList.clear()
+                        viewModel.getTopGifs(0)
+                    } else {
+                        Log.d("MyLog1", "2")
+                        adapter.gifsList.clear()
+                        searchText = p0
+                        viewModel.getSearchGifs(p0, 0)
+                    }
+                }
+                return true
+            }
+        })
+    }
+
+
+    /**
+     * Показывает кнопки "nextPage", "backPage" как дошло до конца скролла
+     */
+    private fun scrollEnd() {
         binding.recyclerViewId.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                scrollDown(recyclerView, newState)
-                scrollUp(recyclerView, newState)
+                if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    nextPage() //слушатель клика при нажатии на кнопку "nextPage"
+                }
                 super.onScrollStateChanged(recyclerView, newState)
             }
         })
     }
 
     /**
-     * При скролле вниз показываю кнопку перейти на следующую страницу и реализация
+     * Слушатель клика при нажатии на кнопку "nextPage"
      */
-    private fun scrollDown(recyclerView: RecyclerView, newState: Int) {
-        if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
-            binding.nextPage.visibility = View.VISIBLE
-            binding.nextPage.setOnClickListener {
-                lifecycleScope.launch {
-                    if (offset == 0) {
-                        offset = 20
-                    }
-                    if ((searchText == null)) {
-                        viewModel.getTopGifs(offset)
-                        settingsScrollDown()
+    private fun nextPage() {
+        binding.nextPage.visibility = View.VISIBLE
+        binding.nextPage.setOnClickListener {
+            lifecycleScope.launch {
+                if (viewModel.offsetMyAct == 0) {
+                    viewModel.offsetMyAct = 20
+                }
+                if (searchText == null) {
+                    viewModel.getTopGifs(viewModel.offsetMyAct)
+                    settingsClickNextPage()
 
-                    } else {
-                        searchText?.let {
-                            viewModel.getSearchGifs(it, offset)
-                            settingsScrollDown()
-                        }
+                } else {
+                    searchText?.let {
+                        viewModel.getSearchGifs(it, viewModel.offsetMyAct)
+                        settingsClickNextPage()
                     }
                 }
             }
@@ -102,99 +158,31 @@ class MainActivity : AppCompatActivity(), GifsAdapter.GifOnClick {
     }
 
     /**
-     * Задаю настройки для правильного отображения данных в страницу при скроле вниз
+     * Задаю настройки с какой позиции взять данные при нажатии на следующую страницу
      */
-    private fun settingsScrollDown() {
-        offset += 20
-        nextClick = true
+    private suspend fun settingsClickNextPage() {
+        viewModel.offsetMyAct += 20
+        viewModel.nextClickMyAct = true
         binding.nextPage.visibility = View.GONE
-        page++
+        binding.progressBarId.visibility = View.VISIBLE
+        delay(1000)
+        binding.progressBarId.visibility = View.GONE
+        viewModel.pageMyAct++
     }
 
     /**
-     * При скролле вверх показываю кнопку вернуться на предыдущую страницу и реализация
+     * Реализация интерфейса с адаптера, открываю новую активити с нажатой гифкой
      */
-    private fun scrollUp(recyclerView: RecyclerView, newState: Int) {
-        if (recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
-            if (page != 0) {
-                binding.backPage.visibility = View.VISIBLE
-                if (offset == 0){
-                    binding.backPage.visibility = View.GONE
-                }
-                binding.backPage.setOnClickListener {
-                    settingsScrollUp()
-
-                    lifecycleScope.launch {
-                        if ((searchText == null)) {
-                            viewModel.getTopGifs(offset)
-                            page--
-                            binding.backPage.visibility = View.GONE
-
-                        } else {
-                            searchText?.let {
-                                viewModel.getSearchGifs(it, offset)
-                                page--
-                                binding.backPage.visibility = View.GONE
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Проверка какие какие данные показать на странице при скролле вверх
-     */
-    private fun settingsScrollUp() {
-        if (offset == 40) {
-            offset = 0
-        } else {
-            if (nextClick) {
-                offset -= 40
-                nextClick = false
-            } else {
-                offset -= 20
-            }
-        }
-    }
-
-    /**
-     * Запуск адаптера
-     */
-    private fun startAdapter(data: List<Data>) {
-        adapter = GifsAdapter(this, this)
-        if (!madeScroll) {
-            adapter.gifsList.addAll(data)
-            binding.recyclerViewId.adapter = adapter
-            binding.recyclerViewId.layoutManager = GridLayoutManager(this, 2)
-            madeScroll = true
-        } else {
-            adapter.gifsList.addAll(data)
-            binding.recyclerViewId.adapter = adapter
-        }
-    }
-
-    /**
-     * Получаю данные с viewModel, подписываюсь на них
-     */
-    private fun startTopGifs() {
-        lifecycleScope.launch {
-            viewModel.getTopGifs(0)
-        }
-    }
-
-    /**
-     * Интерфейс, открываю новую активити с нажатой гифкой
-     */
-    override fun onClick(dataUrl: String?, gifsList: ArrayList<Data>, position: Int) {
+    override fun onClick(gifsList: ArrayList<Data>, position: Int) {
         val intent = Intent(this, SingleGifActivity::class.java)
-        intent.putExtra("gifUrl", dataUrl)
         intent.putExtra("gifsList", gifsList)
         intent.putExtra("position", position)
         startActivity(intent)
     }
 
+    /**
+     * Реализация интерфейса с адаптера, удаляю с активити гифку
+     */
     override fun deleteItem(position: Int) {
         adapter.gifsList.removeAt(position)
         lifecycleScope.launch {
@@ -204,39 +192,9 @@ class MainActivity : AppCompatActivity(), GifsAdapter.GifOnClick {
         }
     }
 
-    /**
-     * Передаю в Api запрос поиска
-     */
-    private fun startSearch() = with(binding) {
-
-        searchId.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(p0: String): Boolean {
-                return false
-            }
-
-            override fun onQueryTextChange(p0: String): Boolean {
-                    if (nextClick) {
-                        setSearchField(p0, offset)
-                    } else {
-                        setSearchField(p0, 0)
-                    }
-                return true
-            }
-        })
-    }
-
-    /**
-     * Задаю данные в адаптер, полученные с поля поиска
-     */
-    private fun setSearchField(p0: String, offset: Int){
-        lifecycleScope.launch {
-            if (p0.isEmpty()) {
-                searchText = null
-                viewModel.getTopGifs(offset)
-            } else {
-                searchText = p0
-                viewModel.getSearchGifs(p0, offset)
-            }
-        }
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.gifsListMyAct = adapter.gifsList
+        Log.d("MyLog1", "${viewModel.gifsListMyAct}")
     }
 }
