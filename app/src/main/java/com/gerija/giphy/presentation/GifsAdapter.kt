@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.gerija.giphy.R
 import com.gerija.giphy.data.api.dto.Data
 import com.squareup.picasso.Picasso
@@ -49,8 +50,8 @@ class GifsAdapter(val context: Context, val gifOnClick: GifOnClick)
     override fun onBindViewHolder(holder: GifsViewHolder, position: Int) {
         val itemGifs = gifsList[position]
         val gifs = itemGifs.images?.original?.url
-        Picasso.get().load(gifs).into(holder.imGifs)
-//        Glide.with(context).load(gifs).into(holder.imGifs)
+//        Picasso.get().load(gifs).into(holder.imGifs)
+        Glide.with(context).load(gifs).into(holder.imGifs)
 
         holder.imDelete.setOnClickListener {
             holder.imDelete.setImageResource(R.drawable.ic_delete_precced)

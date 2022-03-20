@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GestureDetectorCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.gerija.giphy.R
 import com.gerija.giphy.data.api.dto.Data
 import com.gerija.giphy.databinding.ActivitySingleGifBinding
@@ -56,14 +57,14 @@ class SingleGifActivity : AppCompatActivity() {
             viewModel.gifsListSingleAct = intent.getSerializableExtra("gifsList") as ArrayList<Data>
             Picasso.get().load(viewModel.gifsListSingleAct[viewModel.gifsPositionSingleAct]
                 .images?.original?.url).into(binding.imSingleGif)
-//            Glide.with(this).load(viewModel.gifsListSingleAct[viewModel.gifsPositionSingleAct]
-//                .images?.original?.url).into(binding.imSingleGif)
+            Glide.with(this).load(viewModel.gifsListSingleAct[viewModel.gifsPositionSingleAct]
+                .images?.original?.url).into(binding.imSingleGif)
             viewModel.firstVisitSingleAct = false
         } else {
             Picasso.get().load(viewModel.gifsListSingleAct[viewModel.gifsPositionSingleAct]
                 .images?.original?.url).into(binding.imSingleGif)
-//            Glide.with(this).load(viewModel.gifsListSingleAct[viewModel.gifsPositionSingleAct]
-//                .images?.original?.url).into(binding.imSingleGif)
+            Glide.with(this).load(viewModel.gifsListSingleAct[viewModel.gifsPositionSingleAct]
+                .images?.original?.url).into(binding.imSingleGif)
         }
     }
 
@@ -76,10 +77,10 @@ class SingleGifActivity : AppCompatActivity() {
             binding.imageDelete.setImageResource(R.drawable.ic_delete_precced)
             lifecycleScope.launch {
                 delay(200)
-                Picasso.get().load(viewModel.gifsListSingleAct[viewModel.gifsPositionSingleAct]
-                    .images?.original?.url).into(binding.imSingleGif)
-//                Glide.with(this@SingleGifActivity).load(viewModel.gifsListSingleAct[viewModel.gifsPositionSingleAct]
+//                Picasso.get().load(viewModel.gifsListSingleAct[viewModel.gifsPositionSingleAct]
 //                    .images?.original?.url).into(binding.imSingleGif)
+                Glide.with(this@SingleGifActivity).load(viewModel.gifsListSingleAct[viewModel.gifsPositionSingleAct]
+                    .images?.original?.url).into(binding.imSingleGif)
                 binding.imageDelete.setImageResource(R.drawable.ic_delete_normal)
             }
         }
@@ -104,11 +105,11 @@ class SingleGifActivity : AppCompatActivity() {
                         viewModel.gifsPositionSingleAct--
                         binding.imLeft.setImageResource(R.drawable.ic_left_pressed)
                     }
-                    Picasso.get().load(viewModel.gifsListSingleAct[viewModel.gifsPositionSingleAct]
-                        .images?.original?.url).into(binding.imSingleGif)
-
-//                            Glide.with(this@SingleGifActivity).load(viewModel.gifsListSingleAct[viewModel.gifsPositionSingleAct]
+//                    Picasso.get().load(viewModel.gifsListSingleAct[viewModel.gifsPositionSingleAct]
 //                        .images?.original?.url).into(binding.imSingleGif)
+
+                            Glide.with(this@SingleGifActivity).load(viewModel.gifsListSingleAct[viewModel.gifsPositionSingleAct]
+                        .images?.original?.url).into(binding.imSingleGif)
                     //ставлю 2 мил/сек задержку, что бы отобразить изменение цвета на стрелке, при клике
                     lifecycleScope.launch {
                         delay(200)
@@ -120,10 +121,10 @@ class SingleGifActivity : AppCompatActivity() {
                         viewModel.gifsPositionSingleAct++
                         binding.imRight.setImageResource(R.drawable.ic_right_pressed)
                     }
-                    Picasso.get().load(viewModel.gifsListSingleAct[viewModel.gifsPositionSingleAct]
-                        .images?.original?.url).into(binding.imSingleGif)
-//                    Glide.with(this@SingleGifActivity).load(viewModel.gifsListSingleAct[viewModel.gifsPositionSingleAct]
+//                    Picasso.get().load(viewModel.gifsListSingleAct[viewModel.gifsPositionSingleAct]
 //                        .images?.original?.url).into(binding.imSingleGif)
+                    Glide.with(this@SingleGifActivity).load(viewModel.gifsListSingleAct[viewModel.gifsPositionSingleAct]
+                        .images?.original?.url).into(binding.imSingleGif)
                     //ставлю 2 мил/сек задержку, что бы отобразить изменение цвета на стрелке, при клике
                     lifecycleScope.launch {
                         delay(200)
