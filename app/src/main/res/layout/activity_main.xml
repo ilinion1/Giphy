@@ -8,6 +8,18 @@
     tools:context=".presentation.MainActivity">
 
 
+    <ProgressBar
+        android:id="@+id/progressBar2"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:indeterminateTint="@color/teal_700"
+        app:layout_constraintBottom_toBottomOf="@+id/scrollView2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <SearchView
         android:id="@+id/searchId"
         android:layout_width="0dp"
@@ -27,6 +39,7 @@
     </SearchView>
 
     <ScrollView
+        android:id="@+id/scrollView2"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="5dp"
@@ -48,7 +61,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginTop="5dp"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="5dp"
                 tools:listitem="@layout/gif_item" />
 
             <LinearLayout

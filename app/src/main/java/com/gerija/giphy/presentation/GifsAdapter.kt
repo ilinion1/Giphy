@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.gerija.giphy.R
 import com.gerija.giphy.data.api.dto.Data
-import com.squareup.picasso.Picasso
 import java.lang.Thread.sleep
 import kotlin.concurrent.thread
 
@@ -27,8 +26,8 @@ class GifsAdapter(val context: Context, val gifOnClick: GifOnClick)
      }
 
     interface GifOnClick{
-        fun onClick(gifsList: ArrayList<Data>, position: Int)
-        fun deleteItem(position: Int)
+        fun onClick(gifsList: ArrayList<Data>, position: Int) //для перехода на окно слайдера
+        fun deleteItem(position: Int) //для удаления с mainActivity
     }
 
     inner class GifsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -50,7 +49,7 @@ class GifsAdapter(val context: Context, val gifOnClick: GifOnClick)
     override fun onBindViewHolder(holder: GifsViewHolder, position: Int) {
         val itemGifs = gifsList[position]
         val gifs = itemGifs.images?.original?.url
-//        Picasso.get().load(gifs).into(holder.imGifs)
+
         Glide.with(context).load(gifs).into(holder.imGifs)
 
         holder.imDelete.setOnClickListener {

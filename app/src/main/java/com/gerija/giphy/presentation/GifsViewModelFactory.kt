@@ -3,8 +3,6 @@ package com.gerija.giphy.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.gerija.giphy.di.ApplicationScope
-import com.gerija.giphy.domain.GetSearchGifsUseCase
-import com.gerija.giphy.domain.GetTopGifsUseCase
 import javax.inject.Inject
 import javax.inject.Provider
 
